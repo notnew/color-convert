@@ -1,31 +1,43 @@
-import Parse.Parse ( parse )
-import Parse.Type ( Parser, pure )
-import Parse.Combinators ( optional )
-import Parse.Builtin as P
-import Parse.Infix (..)
+
+import Result
+import Result ( Result, RGB, NoResult )
+import Parsers ( parse, hexParse, rgbParse, hslParse  )
 
 import Char
 import Graphics.Input ( Input, Handle, input )
 import Graphics.Input.Field as Field
 import Graphics.Input.Field ( Content, noContent )
 import Keyboard
-import String
 import Window
 
-data Result = RGB Int Int Int
-            | NoResult
+-- Inputs
+hexContent : Input Content
+hexContent = input noContent
+rgbContent = input noContent
+hslContent = input noContent
 
-makeColor r g b = RGB (clamp 0 255 r) (clamp 0 255 g) (clamp 0 255 b)
-
-toColor : Result -> Color
-toColor result =case result of
-                  RGB r g b -> rgb r g b
-                  NoResult  -> white
+entered = keepIf id True Keyboard.enter
 
 type Contents = { hex:Field.Content, rgb:Field.Content, hsl:Field.Content }
 
 noContents : Contents
 noContents = Contents noContent noContent noContent
+
+-- Signals
+contents : Signal Contents
+contents = merges  [ Contents <~ hexContent.signal ~ rgbContent.signal
+                               ~ hslContent.signal
+                   , sampleOn entered (constant noContents)
+                   ]
+
+results : Signal Result
+results =
+    let convert maybeRes = maybe NoResult id maybeRes
+    in merges [
+            (convert . parse hexParse . .string) <~ hexContent.signal
+          , (convert . parse rgbParse . .string) <~ rgbContent.signal
+          , (convert . parse hslParse . .string) <~ hslContent.signal
+          ]
 
 -- view
 main = display <~ Window.dimensions ~ contents ~ results
@@ -36,7 +48,7 @@ display (w,h) contents result =
         frame height elem =
             elem |> size (truncate fieldWidth) (truncate <| fieldWidth/7)
                  |> container w h (middleAt (relative 0.5) (relative height))
-        col = toColor result
+        col = Result.toColor result
     in color col <| layers [
           frame (1/6) <| size (w `div` 2) 200 <| hexField contents.hex result
         , frame (2/6) <| rgbField contents.rgb result
@@ -77,7 +89,7 @@ hslField content result =
         content' =
             case (result, content.string) of
               (RGB r g b, "") ->
-                  let hsl = toHsl <| toColor result
+                  let hsl = toHsl <| Result.toColor result
                   in {noContent | string <-
                       "hsl(" ++ format (hsl.hue/turns 1) ++
                          "," ++ format hsl.saturation ++ "%" ++
@@ -85,64 +97,4 @@ hslField content result =
               otherwise -> content
     in Field.field Field.defaultStyle hslContent.handle id "hsl" content'
 
---
-results : Signal Result
-results =
-    let convert maybeRes = maybe NoResult id maybeRes
-    in merges [
-            (convert . parse hexParse . .string) <~ hexContent.signal
-          , (convert . parse rgbParse . .string) <~ rgbContent.signal
-          , (convert . parse hslParse . .string) <~ hslContent.signal
-          ]
 
-
--- Parsers
-hexParse : Parser Result
-hexParse =
-    let hexDigit = (pure digitToInt <*> P.digit)
-              <|>  (pure hexToInt <*> P.hexDigit)
-        digitToInt d = Char.toCode d - Char.toCode '0'
-        hexToInt d = Char.toCode d - Char.toCode 'a' + 10
-        sixHexes =
-            let byte = pure (\a b -> a*16 + b) <*> hexDigit <*> hexDigit
-            in pure makeColor <*> byte <*> byte <*> byte
-    in optional (P.char '#') *> sixHexes
-
-
-rgbParse : Parser Result
-rgbParse =
-    let int = P.spaces *> optional (P.char ',') *> P.spaces *>
-              P.integer  <* P.spaces
-    in optional (P.string "rgb") *> P.spaces *> optional (P.char '(' )
-             *> pure makeColor <*> int <*> int <*> int
-                <* optional (P.char ')')
-
-hslParse : Parser Result
-hslParse =
-    let sep : Parser a -> Parser a
-        sep parser s = (P.spaces *> optional (P.char ',') *> P.spaces *>
-                       parser <* P.spaces) s
-        hue = pure (\f -> turns <| f/100) <*> (P.float <* optional (P.char '%'))
-        float = (pure (\f -> f/100) <*> (P.float <* P.char '%'))
-            <|> P.float
-        convert h s l = let {red,green,blue} = toRgb <| hsl h s l
-                        in makeColor red green blue
-    in optional (P.string "hsl") *> optional (P.char '(' )
-             *> pure convert <*> (sep hue) <*>  (sep float) <*> (sep float)
-                <* optional (P.char ')')
-
--- Inputs
-hexContent : Input Content
-hexContent = input noContent
-
-rgbContent = input noContent
-
-hslContent = input noContent
-
-contents : Signal Contents
-contents = merges  [ Contents <~ hexContent.signal ~ rgbContent.signal
-                               ~ hslContent.signal
-                   , sampleOn entered (constant noContents)
-                   ]
-
-entered = keepIf id True Keyboard.enter
