@@ -1,0 +1,1108 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="UTF-8"><title>Convert</title><script type="text/javascript" src="elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values)
+   return _elm.Main.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Main";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Input = Elm.Graphics.Input.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Input = Graphics.Input || {};
+   Graphics.Input.Field = Elm.Graphics.Input.Field.make(_elm);
+   var Keyboard = Elm.Keyboard.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parsers = Elm.Parsers.make(_elm);
+   var Result = Elm.Result.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var Window = Elm.Window.make(_elm);
+   var _op = {};
+   var textStyle = Text.defaultStyle;
+   var fieldStyle = function (h) {
+      return _U.replace([["style"
+                         ,_U.replace([["height"
+                                      ,Maybe.Just(h)]],
+                         textStyle)]],
+      Graphics.Input.Field.defaultStyle);
+   };
+   var field = F6(function (textHeight,
+   label,
+   printer,
+   handle,
+   content,
+   result) {
+      return function () {
+         var content$ = String.isEmpty(content.string) ? _U.replace([["string"
+                                                                     ,printer(result)]],
+         Graphics.Input.Field.noContent) : content;
+         return A5(Graphics.Input.Field.field,
+         fieldStyle(textHeight),
+         handle,
+         Basics.id,
+         label,
+         content$);
+      }();
+   });
+   var Contents = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,hex: a
+             ,hsl: c
+             ,rgb: b};
+   });
+   var noContents = A3(Contents,
+   Graphics.Input.Field.noContent,
+   Graphics.Input.Field.noContent,
+   Graphics.Input.Field.noContent);
+   var entered = A3(Signal.keepIf,
+   Basics.id,
+   true,
+   Keyboard.enter);
+   var hslContent = Graphics.Input.input(Graphics.Input.Field.noContent);
+   var rgbContent = Graphics.Input.input(Graphics.Input.Field.noContent);
+   var hexContent = Graphics.Input.input(Graphics.Input.Field.noContent);
+   var contents = function () {
+      var updates = Signal.merges(_L.fromArray([A2(Signal._op["<~"],
+                                               F2(function (hex,_v0) {
+                                                  return function () {
+                                                     return _U.replace([["hex"
+                                                                        ,hex]],
+                                                     noContents);
+                                                  }();
+                                               }),
+                                               hexContent.signal)
+                                               ,A2(Signal._op["<~"],
+                                               F2(function (rgb,_v2) {
+                                                  return function () {
+                                                     return _U.replace([["rgb"
+                                                                        ,rgb]],
+                                                     noContents);
+                                                  }();
+                                               }),
+                                               rgbContent.signal)
+                                               ,A2(Signal._op["<~"],
+                                               F2(function (hsl,_v4) {
+                                                  return function () {
+                                                     return _U.replace([["hsl"
+                                                                        ,hsl]],
+                                                     noContents);
+                                                  }();
+                                               }),
+                                               hslContent.signal)
+                                               ,A2(Signal._op["<~"],
+                                               F2(function (_v6,_v7) {
+                                                  return function () {
+                                                     return function () {
+                                                        return noContents;
+                                                     }();
+                                                  }();
+                                               }),
+                                               entered)]));
+      return A3(Signal.foldp,
+      F2(function (x,y) {
+         return x(y);
+      }),
+      noContents,
+      updates);
+   }();
+   var results = function () {
+      var convert = function (maybeRes) {
+         return A3(Maybe.maybe,
+         Result.NoResult,
+         Basics.id,
+         maybeRes);
+      };
+      return Signal.merges(_L.fromArray([A2(Signal._op["<~"],
+                                        function ($) {
+                                           return convert(Parsers.parse(Parsers.hexParse)(function (_) {
+                                              return _.string;
+                                           }($)));
+                                        },
+                                        hexContent.signal)
+                                        ,A2(Signal._op["<~"],
+                                        function ($) {
+                                           return convert(Parsers.parse(Parsers.rgbParse)(function (_) {
+                                              return _.string;
+                                           }($)));
+                                        },
+                                        rgbContent.signal)
+                                        ,A2(Signal._op["<~"],
+                                        function ($) {
+                                           return convert(Parsers.parse(Parsers.hslParse)(function (_) {
+                                              return _.string;
+                                           }($)));
+                                        },
+                                        hslContent.signal)]));
+   }();
+   var display = F3(function (_v10,
+   contents,
+   result) {
+      return function () {
+         switch (_v10.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var col = Result.toColor(result);
+                 var fieldWidth = Basics.toFloat(_v10._0) * 0.7;
+                 var frame = F2(function (height,
+                 elem) {
+                    return A3(Graphics.Element.container,
+                    _v10._0,
+                    _v10._1,
+                    A2(Graphics.Element.middleAt,
+                    Graphics.Element.relative(0.5),
+                    Graphics.Element.relative(height)))(A2(Graphics.Element.size,
+                    Basics.truncate(fieldWidth),
+                    Basics.truncate(fieldWidth / 7))(elem));
+                 });
+                 var fld = field(fieldWidth / 15);
+                 return Graphics.Element.color(col)(Graphics.Element.layers(_L.fromArray([frame(1 / 6)(A5(fld,
+                                                                                         "hex",
+                                                                                         Result.toHex,
+                                                                                         hexContent.handle,
+                                                                                         contents.hex,
+                                                                                         result))
+                                                                                         ,frame(2 / 6)(A5(fld,
+                                                                                         "rgb",
+                                                                                         Result.toRGB,
+                                                                                         rgbContent.handle,
+                                                                                         contents.rgb,
+                                                                                         result))
+                                                                                         ,frame(3 / 6)(A5(fld,
+                                                                                         "hsl",
+                                                                                         Result.toHSL,
+                                                                                         hslContent.handle,
+                                                                                         contents.hsl,
+                                                                                         result))])));
+              }();}
+         _E.Case($moduleName,
+         "between lines 50 and 63");
+      }();
+   });
+   var main = A2(Signal._op["~"],
+   A2(Signal._op["~"],
+   A2(Signal._op["<~"],
+   display,
+   Window.dimensions),
+   contents),
+   results);
+   _elm.Main.values = {_op: _op
+                      ,hexContent: hexContent
+                      ,rgbContent: rgbContent
+                      ,hslContent: hslContent
+                      ,entered: entered
+                      ,noContents: noContents
+                      ,contents: contents
+                      ,results: results
+                      ,main: main
+                      ,display: display
+                      ,field: field
+                      ,textStyle: textStyle
+                      ,fieldStyle: fieldStyle
+                      ,Contents: Contents};
+   return _elm.Main.values;
+};Elm.Parsers = Elm.Parsers || {};
+Elm.Parsers.make = function (_elm) {
+   "use strict";
+   _elm.Parsers = _elm.Parsers || {};
+   if (_elm.Parsers.values)
+   return _elm.Parsers.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parsers";
+   var Basics = Elm.Basics.make(_elm);
+   var Char = Elm.Char.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parse = Parse || {};
+   Parse.Builtin = Elm.Parse.Builtin.make(_elm);
+   var Parse = Parse || {};
+   Parse.Combinators = Elm.Parse.Combinators.make(_elm);
+   var Parse = Parse || {};
+   Parse.Infix = Elm.Parse.Infix.make(_elm);
+   var Parse = Parse || {};
+   Parse.Parse = Elm.Parse.Parse.make(_elm);
+   var Parse = Parse || {};
+   Parse.Type = Elm.Parse.Type.make(_elm);
+   var Result = Elm.Result.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var hslParse = function () {
+      var convert = F3(function (h,
+      s,
+      l) {
+         return function () {
+            var $ = Color.toRgb(A3(Color.hsl,
+            h,
+            s,
+            l)),
+            red = $.red,
+            green = $.green,
+            blue = $.blue;
+            return A3(Result.make,
+            red,
+            green,
+            blue);
+         }();
+      });
+      var $float = A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<*>"],
+      Parse.Type.pure(function (f) {
+         return f / 100;
+      }),
+      A2(Parse.Infix._op["<*"],
+      Parse.Builtin.$float,
+      Parse.Builtin.$char(_U.chr("%")))),
+      Parse.Builtin.$float);
+      var hue = A2(Parse.Infix._op["<*>"],
+      Parse.Type.pure(function (f) {
+         return Basics.turns(f / 100);
+      }),
+      A2(Parse.Infix._op["<*"],
+      Parse.Builtin.$float,
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("%")))));
+      var sep = F2(function (parser,
+      s) {
+         return A2(Parse.Infix._op["<*"],
+         A2(Parse.Infix._op["*>"],
+         A2(Parse.Infix._op["*>"],
+         A2(Parse.Infix._op["*>"],
+         Parse.Builtin.spaces,
+         Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(",")))),
+         Parse.Builtin.spaces),
+         parser),
+         Parse.Builtin.spaces)(s);
+      });
+      return A2(Parse.Infix._op["<*"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      Parse.Combinators.optional(Parse.Builtin.string("hsl")),
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("(")))),
+      Parse.Type.pure(convert)),
+      sep(hue)),
+      sep($float)),
+      sep($float)),
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(")"))));
+   }();
+   var rgbParse = function () {
+      var $int = A2(Parse.Infix._op["<*"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      Parse.Builtin.spaces,
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(",")))),
+      Parse.Builtin.spaces),
+      Parse.Builtin.integer),
+      Parse.Builtin.spaces);
+      return A2(Parse.Infix._op["<*"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      Parse.Combinators.optional(Parse.Builtin.string("rgb")),
+      Parse.Builtin.spaces),
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("(")))),
+      Parse.Type.pure(Result.make)),
+      $int),
+      $int),
+      $int),
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(")"))));
+   }();
+   var hexParse = function () {
+      var hexToInt = function (d) {
+         return Char.toCode(d) - Char.toCode(_U.chr("a")) + 10;
+      };
+      var digitToInt = function (d) {
+         return Char.toCode(d) - Char.toCode(_U.chr("0"));
+      };
+      var hexDigit = A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<*>"],
+      Parse.Type.pure(digitToInt),
+      Parse.Builtin.digit),
+      A2(Parse.Infix._op["<*>"],
+      Parse.Type.pure(hexToInt),
+      Parse.Builtin.hexDigit));
+      var sixHexes = function () {
+         var $byte = A2(Parse.Infix._op["<*>"],
+         A2(Parse.Infix._op["<*>"],
+         Parse.Type.pure(F2(function (a,
+         b) {
+            return a * 16 + b;
+         })),
+         hexDigit),
+         hexDigit);
+         return A2(Parse.Infix._op["<*>"],
+         A2(Parse.Infix._op["<*>"],
+         A2(Parse.Infix._op["<*>"],
+         Parse.Type.pure(Result.make),
+         $byte),
+         $byte),
+         $byte);
+      }();
+      return A2(Parse.Infix._op["*>"],
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("#"))),
+      sixHexes);
+   }();
+   var parse = Parse.Parse.parse;
+   _elm.Parsers.values = {_op: _op
+                         ,parse: parse
+                         ,hexParse: hexParse
+                         ,rgbParse: rgbParse
+                         ,hslParse: hslParse};
+   return _elm.Parsers.values;
+};Elm.Parse = Elm.Parse || {};
+Elm.Parse.Builtin = Elm.Parse.Builtin || {};
+Elm.Parse.Builtin.make = function (_elm) {
+   "use strict";
+   _elm.Parse = _elm.Parse || {};
+   _elm.Parse.Builtin = _elm.Parse.Builtin || {};
+   if (_elm.Parse.Builtin.values)
+   return _elm.Parse.Builtin.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parse.Builtin";
+   var Basics = Elm.Basics.make(_elm);
+   var Char = Elm.Char.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parse = Parse || {};
+   Parse.Combinators = Elm.Parse.Combinators.make(_elm);
+   var Parse = Parse || {};
+   Parse.Infix = Elm.Parse.Infix.make(_elm);
+   var Parse = Parse || {};
+   Parse.Type = Elm.Parse.Type.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var string = F2(function (s,
+   s$) {
+      return function () {
+         var len = String.length(s);
+         return _U.eq(A2(String.left,
+         len,
+         s$),
+         s) ? Maybe.Just({ctor: "_Tuple2"
+                         ,_0: s
+                         ,_1: A2(String.dropLeft,
+                         len,
+                         s$)}) : Maybe.Nothing;
+      }();
+   });
+   var anyChar = String.uncons;
+   var $char = function (c) {
+      return A2(Parse.Combinators.guard,
+      F2(function (x,y) {
+         return _U.eq(x,y);
+      })(c),
+      anyChar);
+   };
+   var oneOf = function (s) {
+      return A2(Parse.Combinators.guard,
+      function (c) {
+         return A2(String.any,
+         F2(function (x,y) {
+            return _U.eq(x,y);
+         })(c),
+         s);
+      },
+      anyChar);
+   };
+   var space = oneOf(" \n\t\r");
+   var spaces = A2(Parse.Infix._op["<$"],
+   {ctor: "_Tuple0"},
+   Parse.Combinators.many(space));
+   var noneOf = function (s) {
+      return A2(Parse.Combinators.guard,
+      function (c) {
+         return Basics.not(A2(String.any,
+         F2(function (x,y) {
+            return _U.eq(x,y);
+         })(c),
+         s));
+      },
+      anyChar);
+   };
+   var digit = A2(Parse.Combinators.guard,
+   Char.isDigit,
+   anyChar);
+   var integer = function () {
+      var sign = A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<$"],
+      -1,
+      $char(_U.chr("-"))),
+      Parse.Type.pure(1));
+      var num = A2(Parse.Type.bind,
+      Parse.Combinators.many1(digit),
+      function ($) {
+         return Parse.Type.fromMaybe(String.toInt(String.fromList($)));
+      });
+      return A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return x * y;
+      }),
+      sign),
+      num);
+   }();
+   var $float = function () {
+      var sign = A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<$"],
+      -1,
+      $char(_U.chr("-"))),
+      Parse.Type.pure(1));
+      var decimal = A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return {ctor: "::"
+                ,_0: x
+                ,_1: y};
+      }),
+      $char(_U.chr("."))),
+      Parse.Combinators.many1(digit));
+      var maybeDecimal = A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<|>"],
+      decimal,
+      A2(Parse.Infix._op["<$"],
+      _L.fromArray([]),
+      $char(_U.chr(".")))),
+      Parse.Type.pure(_L.fromArray([])));
+      var whole = A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return _L.append(x,y);
+      }),
+      Parse.Combinators.many1(digit)),
+      maybeDecimal);
+      var str = A2(Parse.Infix._op["<$>"],
+      String.fromList,
+      A2(Parse.Infix._op["<|>"],
+      whole,
+      decimal));
+      var num = A2(Parse.Type.bind,
+      str,
+      function ($) {
+         return Parse.Type.fromMaybe(String.toFloat($));
+      });
+      return A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return x * y;
+      }),
+      sign),
+      num);
+   }();
+   var hexDigit = A2(Parse.Combinators.guard,
+   Char.isHexDigit,
+   anyChar);
+   var eof = function (s) {
+      return String.isEmpty(s) ? Maybe.Just({ctor: "_Tuple2"
+                                            ,_0: {ctor: "_Tuple0"}
+                                            ,_1: ""}) : Maybe.Nothing;
+   };
+   _elm.Parse.Builtin.values = {_op: _op
+                               ,eof: eof
+                               ,anyChar: anyChar
+                               ,$char: $char
+                               ,string: string
+                               ,oneOf: oneOf
+                               ,noneOf: noneOf
+                               ,space: space
+                               ,spaces: spaces
+                               ,digit: digit
+                               ,hexDigit: hexDigit
+                               ,integer: integer
+                               ,$float: $float};
+   return _elm.Parse.Builtin.values;
+};Elm.Parse = Elm.Parse || {};
+Elm.Parse.Combinators = Elm.Parse.Combinators || {};
+Elm.Parse.Combinators.make = function (_elm) {
+   "use strict";
+   _elm.Parse = _elm.Parse || {};
+   _elm.Parse.Combinators = _elm.Parse.Combinators || {};
+   if (_elm.Parse.Combinators.values)
+   return _elm.Parse.Combinators.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parse.Combinators";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parse = Parse || {};
+   Parse.Infix = Elm.Parse.Infix.make(_elm);
+   var Parse = Parse || {};
+   Parse.Type = Elm.Parse.Type.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var sepBy1 = F2(function (x,
+   sep) {
+      return function () {
+         var makeList = function (x) {
+            return _L.fromArray([x]);
+         };
+         var join = F3(function (x,
+         _v0,
+         xs) {
+            return function () {
+               return {ctor: "::"
+                      ,_0: x
+                      ,_1: xs};
+            }();
+         });
+         return A2(Parse.Infix._op["<|>"],
+         A2(Parse.Infix._op["<*>"],
+         A2(Parse.Infix._op["<*>"],
+         A2(Parse.Infix._op["<$>"],
+         join,
+         x),
+         sep),
+         function (s) {
+            return A3(sepBy1,x,sep,s);
+         }),
+         A2(Parse.Infix._op["<$>"],
+         makeList,
+         x));
+      }();
+   });
+   var sepBy = F2(function (x,
+   sep) {
+      return A2(Parse.Infix._op["<|>"],
+      A2(sepBy1,x,sep),
+      Parse.Type.pure(_L.fromArray([])));
+   });
+   var count = F2(function (n,x) {
+      return _U.eq(n,
+      0) ? Parse.Type.pure(_L.fromArray([])) : A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return {ctor: "::"
+                ,_0: x
+                ,_1: y};
+      }),
+      x),
+      function (s) {
+         return A3(count,n - 1,x,s);
+      });
+   });
+   var optional = function (p) {
+      return A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<$>"],
+      Maybe.Just,
+      p),
+      Parse.Type.pure(Maybe.Nothing));
+   };
+   var many = function (p) {
+      return A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return {ctor: "::"
+                ,_0: x
+                ,_1: y};
+      }),
+      p),
+      function (s) {
+         return A2(many,p,s);
+      }),
+      Parse.Type.pure(_L.fromArray([])));
+   };
+   var many1 = function (p) {
+      return A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return {ctor: "::"
+                ,_0: x
+                ,_1: y};
+      }),
+      p),
+      many(p));
+   };
+   var lookAhead = F2(function (p,
+   s) {
+      return function () {
+         var _v2 = p(s);
+         switch (_v2.ctor)
+         {case "Just":
+            switch (_v2._0.ctor)
+              {case "_Tuple2":
+                 return Maybe.Just({ctor: "_Tuple2"
+                                   ,_0: _v2._0._0
+                                   ,_1: s});}
+              break;
+            case "Nothing":
+            return Maybe.Nothing;}
+         _E.Case($moduleName,
+         "between lines 15 and 17");
+      }();
+   });
+   var manyTill = F2(function (x,
+   end) {
+      return A2(Parse.Infix._op["<|>"],
+      A2(Parse.Infix._op["<$"],
+      _L.fromArray([]),
+      lookAhead(end)),
+      A2(Parse.Infix._op["<*>"],
+      A2(Parse.Infix._op["<$>"],
+      F2(function (x,y) {
+         return {ctor: "::"
+                ,_0: x
+                ,_1: y};
+      }),
+      x),
+      function (s) {
+         return A3(manyTill,x,end,s);
+      }));
+   });
+   var guard = F2(function (pred,
+   parser) {
+      return function () {
+         var guard$ = function (x) {
+            return pred(x) ? Parse.Type.pure(x) : Parse.Type.fail;
+         };
+         return A2(Parse.Type.bind,
+         parser,
+         guard$);
+      }();
+   });
+   _elm.Parse.Combinators.values = {_op: _op
+                                   ,guard: guard
+                                   ,lookAhead: lookAhead
+                                   ,many: many
+                                   ,many1: many1
+                                   ,optional: optional
+                                   ,manyTill: manyTill
+                                   ,count: count
+                                   ,sepBy: sepBy
+                                   ,sepBy1: sepBy1};
+   return _elm.Parse.Combinators.values;
+};Elm.Parse = Elm.Parse || {};
+Elm.Parse.Infix = Elm.Parse.Infix || {};
+Elm.Parse.Infix.make = function (_elm) {
+   "use strict";
+   _elm.Parse = _elm.Parse || {};
+   _elm.Parse.Infix = _elm.Parse.Infix || {};
+   if (_elm.Parse.Infix.values)
+   return _elm.Parse.Infix.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parse.Infix";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parse = Parse || {};
+   Parse.Type = Elm.Parse.Type.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   _op["<|>"] = Parse.Type.alt;
+   _op["*>"] = Parse.Type.saveRight;
+   _op["<*"] = Parse.Type.saveLeft;
+   _op["<*>"] = Parse.Type.ap;
+   _op["<$>"] = Parse.Type.map;
+   _op["<$"] = Parse.Type.into;
+   _elm.Parse.Infix.values = {_op: _op};
+   return _elm.Parse.Infix.values;
+};Elm.Parse = Elm.Parse || {};
+Elm.Parse.Parse = Elm.Parse.Parse || {};
+Elm.Parse.Parse.make = function (_elm) {
+   "use strict";
+   _elm.Parse = _elm.Parse || {};
+   _elm.Parse.Parse = _elm.Parse.Parse || {};
+   if (_elm.Parse.Parse.values)
+   return _elm.Parse.Parse.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parse.Parse";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Parse = Parse || {};
+   Parse.Type = Elm.Parse.Type.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var parse = F2(function (p,s) {
+      return function () {
+         var _v0 = p(s);
+         switch (_v0.ctor)
+         {case "Just":
+            switch (_v0._0.ctor)
+              {case "_Tuple2":
+                 return Maybe.Just(_v0._0._0);}
+              break;}
+         return Maybe.Nothing;
+      }();
+   });
+   _elm.Parse.Parse.values = {_op: _op
+                             ,parse: parse};
+   return _elm.Parse.Parse.values;
+};Elm.Parse = Elm.Parse || {};
+Elm.Parse.Type = Elm.Parse.Type || {};
+Elm.Parse.Type.make = function (_elm) {
+   "use strict";
+   _elm.Parse = _elm.Parse || {};
+   _elm.Parse.Type = _elm.Parse.Type || {};
+   if (_elm.Parse.Type.values)
+   return _elm.Parse.Type.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Parse.Type";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var rmap = F2(function (f,r) {
+      return function () {
+         switch (r.ctor)
+         {case "Just": switch (r._0.ctor)
+              {case "_Tuple2":
+                 return Maybe.Just({ctor: "_Tuple2"
+                                   ,_0: f(r._0._0)
+                                   ,_1: r._0._1});}
+              break;
+            case "Nothing":
+            return Maybe.Nothing;}
+         _E.Case($moduleName,
+         "between lines 56 and 58");
+      }();
+   });
+   var fail = Basics.always(Maybe.Nothing);
+   var alt = F3(function (px,
+   py,
+   s) {
+      return function () {
+         var _v4 = px(s);
+         switch (_v4.ctor)
+         {case "Nothing": return py(s);}
+         return _v4;
+      }();
+   });
+   var bind = F3(function (px,
+   k,
+   s) {
+      return function () {
+         var _v5 = px(s);
+         switch (_v5.ctor)
+         {case "Just":
+            switch (_v5._0.ctor)
+              {case "_Tuple2": return A2(k,
+                   _v5._0._0,
+                   _v5._0._1);}
+              break;
+            case "Nothing":
+            return Maybe.Nothing;}
+         _E.Case($moduleName,
+         "between lines 34 and 36");
+      }();
+   });
+   var pure = F2(function (x,s) {
+      return Maybe.Just({ctor: "_Tuple2"
+                        ,_0: x
+                        ,_1: s});
+   });
+   var fromMaybe = A2(Maybe.maybe,
+   fail,
+   pure);
+   var ap = F3(function (pf,px,s) {
+      return function () {
+         var _v9 = pf(s);
+         switch (_v9.ctor)
+         {case "Just":
+            switch (_v9._0.ctor)
+              {case "_Tuple2":
+                 return rmap(_v9._0._0)(px(_v9._0._1));}
+              break;
+            case "Nothing":
+            return Maybe.Nothing;}
+         _E.Case($moduleName,
+         "between lines 19 and 21");
+      }();
+   });
+   var map = F2(function (f,p) {
+      return function ($) {
+         return rmap(f)(p($));
+      };
+   });
+   var into = function ($) {
+      return map(Basics.always($));
+   };
+   var saveLeft = F2(function (px,
+   py) {
+      return A2(ap,
+      A2(map,Basics.always,px),
+      py);
+   });
+   var saveRight = F2(function (px,
+   py) {
+      return A2(ap,
+      A2(map,
+      Basics.flip(Basics.always),
+      px),
+      py);
+   });
+   _elm.Parse.Type.values = {_op: _op
+                            ,map: map
+                            ,into: into
+                            ,ap: ap
+                            ,pure: pure
+                            ,saveLeft: saveLeft
+                            ,saveRight: saveRight
+                            ,alt: alt
+                            ,fail: fail
+                            ,bind: bind
+                            ,fromMaybe: fromMaybe};
+   return _elm.Parse.Type.values;
+};Elm.Result = Elm.Result || {};
+Elm.Result.make = function (_elm) {
+   "use strict";
+   _elm.Result = _elm.Result || {};
+   if (_elm.Result.values)
+   return _elm.Result.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Result";
+   var Basics = Elm.Basics.make(_elm);
+   var Char = Elm.Char.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var NoResult = {ctor: "NoResult"};
+   var RGB = F3(function (a,b,c) {
+      return {ctor: "RGB"
+             ,_0: a
+             ,_1: b
+             ,_2: c};
+   });
+   var make = F3(function (r,g,b) {
+      return A3(RGB,
+      A3(Basics.clamp,0,255,r),
+      A3(Basics.clamp,0,255,g),
+      A3(Basics.clamp,0,255,b));
+   });
+   var toColor = function (result) {
+      return function () {
+         switch (result.ctor)
+         {case "NoResult":
+            return Color.white;
+            case "RGB": return A3(Color.rgb,
+              result._0,
+              result._1,
+              result._2);}
+         _E.Case($moduleName,
+         "between lines 11 and 13");
+      }();
+   };
+   var toHex = function (result) {
+      return function () {
+         var toHexDigit = function (n) {
+            return _U.cmp(n,
+            0) < 0 ? "" : _U.cmp(n,
+            10) < 0 ? String.show(n) : _U.cmp(n,
+            16) < 0 ? function () {
+               var charCode = n + Char.toCode(_U.chr("a")) - 10;
+               return A2(String.cons,
+               Char.fromCode(charCode),
+               "");
+            }() : "";
+         };
+         var toHex = function (n) {
+            return _U.cmp(n,
+            16) < 0 ? _L.append("0",
+            toHexDigit(n)) : _L.append(toHexDigit(n / 16 | 0),
+            toHexDigit(A2(Basics.mod,
+            n,
+            16)));
+         };
+         return function () {
+            switch (result.ctor)
+            {case "NoResult": return "";
+               case "RGB":
+               return _L.append("#",
+                 _L.append(toHex(result._0),
+                 _L.append(toHex(result._1),
+                 toHex(result._2))));}
+            _E.Case($moduleName,
+            "between lines 27 and 29");
+         }();
+      }();
+   };
+   var toRGB = function (result) {
+      return function () {
+         switch (result.ctor)
+         {case "NoResult": return "";
+            case "RGB":
+            return _L.append("rgb(",
+              _L.append(String.show(result._0),
+              _L.append(",",
+              _L.append(String.show(result._1),
+              _L.append(",",
+              _L.append(String.show(result._2),
+              ")"))))));}
+         _E.Case($moduleName,
+         "between lines 33 and 35");
+      }();
+   };
+   var toHSL = function (result) {
+      return function () {
+         var $ = Color.toHsl(toColor(result)),
+         hue = $.hue,
+         saturation = $.saturation,
+         lightness = $.lightness;
+         var format = function (f) {
+            return String.show(Basics.round(f * 100));
+         };
+         return function () {
+            switch (result.ctor)
+            {case "NoResult": return "";
+               case "RGB":
+               return _L.append("hsl(",
+                 _L.append(format(hue / Basics.turns(1)),
+                 _L.append(",",
+                 _L.append(format(saturation),
+                 _L.append("%",
+                 _L.append(",",
+                 _L.append(format(lightness),
+                 "%)")))))));}
+            _E.Case($moduleName,
+            "between lines 41 and 46");
+         }();
+      }();
+   };
+   _elm.Result.values = {_op: _op
+                        ,make: make
+                        ,toColor: toColor
+                        ,toHex: toHex
+                        ,toRGB: toRGB
+                        ,toHSL: toHSL
+                        ,RGB: RGB
+                        ,NoResult: NoResult};
+   return _elm.Result.values;
+};</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
