@@ -5,7 +5,7 @@ import Parsers ( parse, hexParse, rgbParse, hslParse  )
 
 import Graphics.Input ( Input, Handle, input )
 import Graphics.Input.Field as Field
-import Graphics.Input.Field ( Content, noContent )
+import Graphics.Input.Field ( Content, noContent, defaultStyle, uniformly )
 import Keyboard
 import Window
 
@@ -51,22 +51,25 @@ display (w,h) contents result =
         frame height elem =
             elem |> size (truncate fieldWidth) (truncate <| fieldWidth/7)
                  |> container w h (middleAt (relative 0.5) (relative height))
+        fld = field <| fieldWidth/15
         col = Result.toColor result
     in color col <| layers [
-          frame (1/6) <| field "hex" Result.toHex hexContent.handle
+          frame (1/6) <| fld "hex" Result.toHex hexContent.handle
                                contents.hex result
-        , frame (2/6) <| field "rgb" Result.toRGB rgbContent.handle
+        , frame (2/6) <| fld "rgb" Result.toRGB rgbContent.handle
                                contents.rgb result
-        , frame (3/6) <| field "hsl" Result.toHSL hslContent.handle
+        , frame (3/6) <| fld "hsl" Result.toHSL hslContent.handle
                                contents.hsl result
            ]
 
-field : String -> (Result -> String) -> Handle Content -> Content -> Result
-            -> Element
-field label printer handle content result =
+field : Float -> String -> (Result -> String) -> Handle Content -> Content
+              -> Result -> Element
+field textHeight label printer handle content result =
     let content' = if | String.isEmpty content.string ->
                          { noContent | string <- printer result }
                       | otherwise -> content
-    in Field.field Field.defaultStyle handle id label content'
+    in Field.field (fieldStyle textHeight) handle id label content'
 
-
+textStyle = Text.defaultStyle
+fieldStyle h = { defaultStyle |
+     style <- {textStyle | height <- Just h } }
