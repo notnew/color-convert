@@ -90,7 +90,8 @@ results : Signal Result
 results =
     let convert maybeRes = maybe NoResult id maybeRes
     in merges [
-           (convert . parse rgbParse . .string) <~ rgbContent.signal
+            (convert . parse rgbParse . .string) <~ rgbContent.signal
+          , (convert . parse hslParse . .string) <~ hslContent.signal
           ]
 
 
@@ -101,13 +102,21 @@ rgbParse =
               P.integer  <* P.spaces
     in optional (P.string "rgb") *> P.spaces *> optional (P.char '(' )
              *> pure makeColor <*> int <*> int <*> int
-             <* optional (P.char ')')
+                <* optional (P.char ')')
 
 hslParse : Parser Result
-hslParse = optional (P.string "rgb") *> optional (P.char '(' )
-             *> pure RGB <*> P.integer
-                         <*> (P.char ',' *> P.integer)
-                         <*> (P.char ',' *> P.integer) <* optional (P.char ')')
+hslParse =
+    let sep : Parser a -> Parser a
+        sep parser s = (P.spaces *> optional (P.char ',') *> P.spaces *>
+                       parser <* P.spaces) s
+        hue = pure (\f -> turns <| f/100) <*> (P.float <* optional (P.char '%'))
+        float = (pure (\f -> f/100) <*> (P.float <* P.char '%'))
+            <|> P.float
+        convert h s l = let {red,green,blue} = toRgb <| hsl h s l
+                        in makeColor red green blue
+    in optional (P.string "hsl") *> optional (P.char '(' )
+             *> pure convert <*> (sep hue) <*>  (sep float) <*> (sep float)
+                <* optional (P.char ')')
 
 -- Inputs
 hexContent : Input Content
