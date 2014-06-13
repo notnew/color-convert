@@ -9,7 +9,7 @@ import Graphics.Input.Field as Field
 import Graphics.Input.Field ( Content, noContent )
 import Window
 
-data Result = RGB Float Float Float
+data Result = RGB Int Int Int
             | NoResult
 
 -- View
@@ -19,7 +19,10 @@ display : (Int,Int) -> Contents -> Result -> Element
 display (w,h) contents result =
     let frame height elem =
             container w h (middleAt (relative 0.5) (relative height)) elem
-    in color lightGrey <| layers [
+        col = case result of
+                RGB r g b -> rgb r g b
+                NoResult  -> white
+    in color col <| layers [
           frame (1/6) <| hexField contents.hex result
         , frame (2/6) <| rgbField contents.rgb result
         , frame (3/6) <| hslField contents.hsl result
@@ -27,7 +30,13 @@ display (w,h) contents result =
 
 hexField : Content -> Result -> Element
 hexField content result  =
-    Field.field Field.defaultStyle hexContent.handle id "hex" content
+    let content' = case (result, content) of
+                     (RGB r g b, noContent) ->
+                         {noContent | string <- "rbg(" ++ show r ++
+                                                   "," ++ show g ++
+                                                   "," ++ show b ++ ")"}
+                     otherwise -> content
+    in Field.field Field.defaultStyle hexContent.handle id "hex" content'
 
 rgbField : Content -> Result -> Element
 rgbField content result =
@@ -49,7 +58,15 @@ results =
 -- Parsers
 rgbParse : Parser Result
 rgbParse = optional (P.string "rgb") *> optional (P.char '(' )
-             *> pure NoResult
+             *> pure RGB <*> P.integer
+                         <*> (P.char ',' *> P.integer)
+                         <*> (P.char ',' *> P.integer) <* optional (P.char ')')
+
+hslParse : Parser Result
+hslParse = optional (P.string "rgb") *> optional (P.char '(' )
+             *> pure RGB <*> P.integer
+                         <*> (P.char ',' *> P.integer)
+                         <*> (P.char ',' *> P.integer) <* optional (P.char ')')
 
 -- Inputs
 hexContent : Input Content
