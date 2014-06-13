@@ -18,13 +18,22 @@ display (w,h) contents =
     let frame height elem =
             container w h (middleAt (relative 0.5) (relative height)) elem
     in color lightGrey <| layers [
-          frame (1/6) <| field contents.hex
-        , frame (2/6) <| field contents.rgb
-        , frame (3/6) <| field contents.hsl
+          frame (1/6) <| hexField contents.hex
+        , frame (2/6) <| rgbField contents.rgb
+        , frame (3/6) <| hslField contents.hsl
            ]
 
-field : Content -> Element
-field content = asText "hi"
+hexField : Content -> Element
+hexField content =
+    Field.field Field.defaultStyle hexContent.handle id "hex" content
+
+rgbField : Content -> Element
+rgbField content =
+    Field.field Field.defaultStyle rgbContent.handle id "rgb" content
+
+hslField : Content -> Element
+hslField content =
+    Field.field Field.defaultStyle hslContent.handle id "hsl" content
 
 -- Inputs
 hexContent : Input Content
