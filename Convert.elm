@@ -14,6 +14,8 @@ import Window
 data Result = RGB Int Int Int
             | NoResult
 
+makeColor r g b = RGB (clamp 0 255 r) (clamp 0 255 g) (clamp 0 255 b)
+
 -- View
 main = display <~ Window.dimensions ~ contents ~ results
 
@@ -75,10 +77,12 @@ results =
 
 -- Parsers
 rgbParse : Parser Result
-rgbParse = optional (P.string "rgb") *> optional (P.char '(' )
-             *> pure RGB <*> P.integer
-                         <*> (P.char ',' *> P.integer)
-                         <*> (P.char ',' *> P.integer) <* optional (P.char ')')
+rgbParse = optional (P.string "rgb") *> P.spaces *> optional (P.char '(' )
+             *> pure makeColor
+                    <*> (P.spaces *> P.integer <* P.spaces)
+                    <*> (P.char ',' *> P.spaces *> P.integer <* P.spaces)
+                    <*> (P.char ',' *> P.spaces *> P.integer <* P.spaces)
+             <* optional (P.char ')')
 
 hslParse : Parser Result
 hslParse = optional (P.string "rgb") *> optional (P.char '(' )
