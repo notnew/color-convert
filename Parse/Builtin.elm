@@ -4,7 +4,7 @@ import Parse.Type (Parser, pure, bind, fromMaybe, fail)
 import Parse.Infix (..)
 import Parse.Combinators ( guard, tryModify, lookAhead, many, many1)
 
-import Char ( isDigit )
+import Char ( isDigit, isHexDigit )
 import String as S
 
 eof : Parser ()
@@ -35,6 +35,9 @@ spaces = () <$ many space
 
 digit : Parser Char
 digit = guard isDigit anyChar
+
+hexDigit: Parser Char
+hexDigit = guard isHexDigit anyChar
 
 integer : Parser Int
 integer = let num = many1 digit `bind` (fromMaybe . S.toInt . S.fromList)

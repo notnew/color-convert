@@ -90,12 +90,25 @@ results : Signal Result
 results =
     let convert maybeRes = maybe NoResult id maybeRes
     in merges [
-            (convert . parse rgbParse . .string) <~ rgbContent.signal
+            (convert . parse hexParse . .string) <~ hexContent.signal
+          , (convert . parse rgbParse . .string) <~ rgbContent.signal
           , (convert . parse hslParse . .string) <~ hslContent.signal
           ]
 
 
 -- Parsers
+hexParse : Parser Result
+hexParse =
+    let hexDigit = (pure digitToInt <*> P.digit)
+              <|>  (pure hexToInt <*> P.hexDigit)
+        digitToInt d = Char.toCode d - Char.toCode '0'
+        hexToInt d = Char.toCode d - Char.toCode 'a' + 10
+        sixHexes =
+            let byte = pure (\a b -> a*16 + b) <*> hexDigit <*> hexDigit
+            in pure makeColor <*> byte <*> byte <*> byte
+    in optional (P.char '#') *> sixHexes
+
+
 rgbParse : Parser Result
 rgbParse =
     let int = P.spaces *> optional (P.char ',') *> P.spaces *>
