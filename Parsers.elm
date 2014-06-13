@@ -10,7 +10,6 @@ import Parse.Builtin as P
 import Parse.Infix (..)
 
 import Char
-import String
 
 parse = Parse.Parse.parse
 

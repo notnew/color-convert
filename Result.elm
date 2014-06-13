@@ -1,5 +1,7 @@
 module Result where
 
+import Char
+
 data Result = RGB Int Int Int
             | NoResult
 
@@ -10,3 +12,35 @@ toColor result =case result of
                   RGB r g b -> rgb r g b
                   NoResult  -> white
 
+-- Display
+toHex : Result -> String
+toHex result =
+    let toHexDigit n = if | n < 0  -> ""
+                          | n < 10 -> show n
+                          | n < 16 ->
+                              let charCode = n + Char.toCode 'a' - 10
+                              in String.cons (Char.fromCode charCode) ""
+                          | otherwise -> ""
+        toHex n = if | n < 16 -> "0" ++ toHexDigit n
+                     | otherwise ->
+                         toHexDigit (n `div` 16) ++ toHexDigit (n `mod` 16)
+    in case result of
+         RGB r g b -> "#" ++ toHex r ++ toHex g ++ toHex b
+         NoResult  -> ""
+
+toRGB : Result -> String
+toRGB result =
+    case result of
+      RGB r g b -> "rgb(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ ")"
+      NoResult  -> ""
+
+toHSL : Result -> String
+toHSL result =
+    let format f = show <| round <| f * 100
+        {hue, saturation, lightness} = toHsl <| toColor result
+    in case result of
+         RGB r g b ->
+             "hsl(" ++ format (hue/turns 1) ++
+               "," ++ format saturation ++ "%" ++
+               "," ++ format lightness ++ "%)"
+         NoResult  -> ""
