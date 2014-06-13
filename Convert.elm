@@ -16,7 +16,12 @@ data Result = RGB Int Int Int
 
 makeColor r g b = RGB (clamp 0 255 r) (clamp 0 255 g) (clamp 0 255 b)
 
--- View
+toColor : Result -> Color
+toColor result =case result of
+                  RGB r g b -> rgb r g b
+                  NoResult  -> white
+
+-- view
 main = display <~ Window.dimensions ~ contents ~ results
 
 display : (Int,Int) -> Contents -> Result -> Element
@@ -25,9 +30,7 @@ display (w,h) contents result =
         frame height elem =
             elem |> size (truncate fieldWidth) (truncate <| fieldWidth/7)
                  |> container w h (middleAt (relative 0.5) (relative height))
-        col = case result of
-                RGB r g b -> rgb r g b
-                NoResult  -> white
+        col = toColor result
     in color col <| layers [
           frame (1/6) <| size (w `div` 2) 200 <| hexField contents.hex result
         , frame (2/6) <| rgbField contents.rgb result
@@ -56,15 +59,25 @@ rgbField : Content -> Result -> Element
 rgbField content result =
     let content' = case (result, content) of
                      (RGB r g b, noContent) ->
-                         {noContent | string <- "rbg(" ++ show r ++
+                         {noContent | string <- "rgb(" ++ show r ++
                                                    "," ++ show g ++
                                                    "," ++ show b ++ ")"}
                      otherwise -> content
-    in Field.field Field.defaultStyle rgbContent.handle id "rgb" content
+    in Field.field Field.defaultStyle rgbContent.handle id "rgb" content'
 
 hslField : Content -> Result -> Element
 hslField content result =
-    Field.field Field.defaultStyle hslContent.handle id "hsl" content
+    let format f = show <| round <| f * 100
+        content' =
+            case (result, content.string) of
+              (RGB r g b, "") ->
+                  let hsl = toHsl <| toColor result
+                  in {noContent | string <-
+                      "hsl(" ++ format (hsl.hue/turns 1) ++
+                         "," ++ format hsl.saturation ++ "%" ++
+                         "," ++ format hsl.lightness ++ "%)"}
+              otherwise -> content
+    in Field.field Field.defaultStyle hslContent.handle id "hsl" content'
 
 --
 results : Signal Result
