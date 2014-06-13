@@ -8,6 +8,7 @@ import Char
 import Graphics.Input ( Input, Handle, input )
 import Graphics.Input.Field as Field
 import Graphics.Input.Field ( Content, noContent )
+import Keyboard
 import String
 import Window
 
@@ -20,6 +21,11 @@ toColor : Result -> Color
 toColor result =case result of
                   RGB r g b -> rgb r g b
                   NoResult  -> white
+
+type Contents = { hex:Field.Content, rgb:Field.Content, hsl:Field.Content }
+
+noContents : Contents
+noContents = Contents noContent noContent noContent
 
 -- view
 main = display <~ Window.dimensions ~ contents ~ results
@@ -90,11 +96,11 @@ results =
 
 -- Parsers
 rgbParse : Parser Result
-rgbParse = optional (P.string "rgb") *> P.spaces *> optional (P.char '(' )
-             *> pure makeColor
-                    <*> (P.spaces *> P.integer <* P.spaces)
-                    <*> (P.char ',' *> P.spaces *> P.integer <* P.spaces)
-                    <*> (P.char ',' *> P.spaces *> P.integer <* P.spaces)
+rgbParse =
+    let int = P.spaces *> optional (P.char ',') *> P.spaces *>
+              P.integer  <* P.spaces
+    in optional (P.string "rgb") *> P.spaces *> optional (P.char '(' )
+             *> pure makeColor <*> int <*> int <*> int
              <* optional (P.char ')')
 
 hslParse : Parser Result
@@ -111,8 +117,10 @@ rgbContent = input noContent
 
 hslContent = input noContent
 
-type Contents = { hex:Field.Content, rgb:Field.Content, hsl:Field.Content }
-
 contents : Signal Contents
-contents = Contents <~ hexContent.signal ~ rgbContent.signal
-                     ~ hslContent.signal
+contents = merges  [ Contents <~ hexContent.signal ~ rgbContent.signal
+                               ~ hslContent.signal
+                   , sampleOn entered (constant noContents)
+                   ]
+
+entered = keepIf id True Keyboard.enter
