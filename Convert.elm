@@ -48,8 +48,8 @@ hexField content result  =
         toHex n = if | n < 16 -> "0" ++ toHexDigit n
                      | otherwise ->
                          toHexDigit (n `div` 16) ++ toHexDigit (n `mod` 16)
-        content' = case (result, content) of
-                     (RGB r g b, noContent) ->
+        content' = case (result, content.string) of
+                     (RGB r g b, "") ->
                          { noContent | string <- "#" ++ toHex r ++ toHex g
                                                      ++ toHex b }
                      otherwise -> content
@@ -57,8 +57,8 @@ hexField content result  =
 
 rgbField : Content -> Result -> Element
 rgbField content result =
-    let content' = case (result, content) of
-                     (RGB r g b, noContent) ->
+    let content' = case (result, content.string) of
+                     (RGB r g b, "") ->
                          {noContent | string <- "rgb(" ++ show r ++
                                                    "," ++ show g ++
                                                    "," ++ show b ++ ")"}
