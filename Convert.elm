@@ -24,10 +24,14 @@ noContents = Contents noContent noContent noContent
 
 -- Signals
 contents : Signal Contents
-contents = merges  [ Contents <~ hexContent.signal ~ rgbContent.signal
-                               ~ hslContent.signal
-                   , sampleOn entered (constant noContents)
-                   ]
+contents =
+    let updates = merges [
+                   (\hex _ -> {noContents | hex <- hex}) <~ hexContent.signal
+                 , (\rgb _ -> {noContents | rgb <- rgb}) <~ rgbContent.signal
+                 , (\hsl _ -> {noContents | hsl <- hsl}) <~ hslContent.signal
+                 , (\_ _ -> noContents) <~ entered
+                            ]
+    in foldp (<|) noContents updates
 
 results : Signal Result
 results =
