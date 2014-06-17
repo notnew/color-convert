@@ -47,18 +47,20 @@ main = display <~ Window.dimensions ~ contents ~ results
 
 display : (Int,Int) -> Contents -> Result -> Element
 display (w,h) contents result =
-    let fieldWidth = toFloat w * 0.7
+    let fieldWidth = truncate <| toFloat w * 0.85
+        fieldHeight = 80
         frame height elem =
-            elem |> size (truncate fieldWidth) (truncate <| fieldWidth/7)
-                 |> container w h (middleAt (relative 0.5) (relative height))
-        fld = field <| fieldWidth/15
+            elem |> size fieldWidth fieldHeight
+                 |> container w h (middleAt (relative 0.5)
+                                            (absolute height))
+        fld = field <| toFloat fieldHeight/2
         col = Result.toColor result
     in color col <| layers [
-          frame (1/6) <| fld "hex" Result.toHex hexContent.handle
+          frame (240) <| fld "hex" Result.toHex hexContent.handle
                                contents.hex result
-        , frame (2/6) <| fld "rgb" Result.toRGB rgbContent.handle
+        , frame (360) <| fld "rgb" Result.toRGB rgbContent.handle
                                contents.rgb result
-        , frame (3/6) <| fld "hsl" Result.toHSL hslContent.handle
+        , frame (480) <| fld "hsl" Result.toHSL hslContent.handle
                                contents.hsl result
            ]
 
@@ -72,4 +74,4 @@ field textHeight label printer handle content result =
 
 textStyle = Text.defaultStyle
 fieldStyle h = { defaultStyle |
-     style <- {textStyle | height <- Just h } }
+     style <- {textStyle | height <- Just h, bold <- True} }
