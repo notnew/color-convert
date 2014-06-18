@@ -21,10 +21,10 @@ hexParse =
         digitToInt d = Char.toCode d - Char.toCode '0'
         hexToInt d = Char.toCode d - Char.toCode 'a' + 10
         sixHexes =
-            let byte = pure (\a b -> a*16 + b) <*> hexDigit <*> hexDigit
+            let byte = pure (\a b -> a*16 + b) <*>
+                         (P.spaces *> hexDigit) <*> hexDigit
             in pure Result.make <*> byte <*> byte <*> byte
     in optional (P.char '#') *> sixHexes
-
 
 rgbParse : Parser Result
 rgbParse =
