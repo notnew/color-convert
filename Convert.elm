@@ -9,6 +9,16 @@ import Graphics.Input.Field ( Content, noContent, defaultStyle, uniformly )
 import Keyboard
 import Window
 
+{- Record of settings and data needed to make an input field -}
+type FieldInfo =
+    { label:String, printer:Result -> String, handle:Handle Content
+    , content:Content, result:Result, textHeight:Float }
+
+hexInfo : FieldInfo
+hexInfo = FieldInfo "hex" Result.toHex hexContent.handle noContent NoResult 40
+rgbInfo = FieldInfo "rgb" Result.toRGB rgbContent.handle noContent NoResult 40
+hslInfo = FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult 40
+
 -- Inputs
 hexContent : Input Content
 hexContent = input noContent
@@ -17,12 +27,12 @@ hslContent = input noContent
 
 entered = keepIf id True Keyboard.enter
 
+-- Signals
 type Contents = { hex:Field.Content, rgb:Field.Content, hsl:Field.Content }
 
 noContents : Contents
 noContents = Contents noContent noContent noContent
 
--- Signals
 contents : Signal Contents
 contents =
     let updates = merges [
@@ -53,20 +63,18 @@ display (w,h) contents result =
             elem |> size fieldWidth fieldHeight
                  |> container w h (middleAt (relative 0.5)
                                             (absolute height))
-        fld = field <| toFloat fieldHeight/2
+        fld fieldInfo = field {fieldInfo | result <- result
+                              , textHeight <- toFloat fieldHeight/2}
         col = Result.toColor result
     in color col <| layers [
-          frame (240) <| fld "hex" Result.toHex hexContent.handle
-                               contents.hex result
-        , frame (360) <| fld "rgb" Result.toRGB rgbContent.handle
-                               contents.rgb result
-        , frame (480) <| fld "hsl" Result.toHSL hslContent.handle
-                               contents.hsl result
+          frame (240) <| fld { hexInfo | content <- contents.hex }
+        , frame (360) <| fld { rgbInfo | content <- contents.rgb }
+        , frame (480) <| fld { hslInfo | content <- contents.hsl }
            ]
 
-field : Float -> String -> (Result -> String) -> Handle Content -> Content
-              -> Result -> Element
-field textHeight label printer handle content result =
+{- make an input field using data stored in a FieldInfo -}
+field : FieldInfo -> Element
+field {textHeight, label, printer, handle, content, result} =
     let content' = if | String.isEmpty content.string ->
                          { noContent | string <- printer result }
                       | otherwise -> content
