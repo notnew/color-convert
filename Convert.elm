@@ -23,7 +23,7 @@ rgbInfo = FieldInfo "rgb" Result.toRGB rgbContent.handle noContent NoResult
 hslInfo =
     let hint =
         "Separate components by a comma or space\n" ++
-        "hue is in radians\n" ++
+        "hue is in radians between 0 and 6.283185\n" ++
         "lightness and saturation are fractions between 0 and 1"
     in FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult
                  100 40 hint
