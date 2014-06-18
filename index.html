@@ -41,28 +41,41 @@ Elm.Main.make = function (_elm) {
    var fieldStyle = function (h) {
       return _U.replace([["style"
                          ,_U.replace([["height"
-                                      ,Maybe.Just(h)]],
-                         textStyle)]],
+                                      ,Maybe.Just(h)]
+                                     ,["bold",true]],
+                         textStyle)]
+                        ,["outline"
+                         ,{_: {}
+                          ,color: Color.grey
+                          ,radius: 6
+                          ,width: Graphics.Input.Field.uniformly(4)}]
+                        ,["padding"
+                         ,Graphics.Input.Field.uniformly(Basics.round(h / 2))]],
       Graphics.Input.Field.defaultStyle);
    };
-   var field = F6(function (textHeight,
-   label,
-   printer,
-   handle,
-   content,
-   result) {
+   var field = function (_v0) {
       return function () {
-         var content$ = String.isEmpty(content.string) ? _U.replace([["string"
-                                                                     ,printer(result)]],
-         Graphics.Input.Field.noContent) : content;
-         return A5(Graphics.Input.Field.field,
-         fieldStyle(textHeight),
-         handle,
-         Basics.id,
-         label,
-         content$);
+         return function () {
+            var hintElem = _U.eq(_v0.result,
+            Result.NoResult) && Basics.not(String.isEmpty(_v0.content.string)) ? Text.leftAligned(Text.toText(_v0.hint)) : Graphics.Element.empty;
+            var style = fieldStyle(Basics.toFloat(_v0.height) / 2);
+            var content$ = String.isEmpty(_v0.content.string) ? _U.replace([["string"
+                                                                            ,_v0.printer(_v0.result)]],
+            Graphics.Input.Field.noContent) : _v0.content;
+            var field = A2(Graphics.Element.size,
+            _v0.width,
+            _v0.height)(A5(Graphics.Input.Field.field,
+            style,
+            _v0.handle,
+            Basics.id,
+            _v0.label,
+            content$));
+            return A2(Graphics.Element.above,
+            field,
+            hintElem);
+         }();
       }();
-   });
+   };
    var Contents = F3(function (a,
    b,
    c) {
@@ -84,7 +97,7 @@ Elm.Main.make = function (_elm) {
    var hexContent = Graphics.Input.input(Graphics.Input.Field.noContent);
    var contents = function () {
       var updates = Signal.merges(_L.fromArray([A2(Signal._op["<~"],
-                                               F2(function (hex,_v0) {
+                                               F2(function (hex,_v2) {
                                                   return function () {
                                                      return _U.replace([["hex"
                                                                         ,hex]],
@@ -93,7 +106,7 @@ Elm.Main.make = function (_elm) {
                                                }),
                                                hexContent.signal)
                                                ,A2(Signal._op["<~"],
-                                               F2(function (rgb,_v2) {
+                                               F2(function (rgb,_v4) {
                                                   return function () {
                                                      return _U.replace([["rgb"
                                                                         ,rgb]],
@@ -102,7 +115,7 @@ Elm.Main.make = function (_elm) {
                                                }),
                                                rgbContent.signal)
                                                ,A2(Signal._op["<~"],
-                                               F2(function (hsl,_v4) {
+                                               F2(function (hsl,_v6) {
                                                   return function () {
                                                      return _U.replace([["hsl"
                                                                         ,hsl]],
@@ -111,7 +124,7 @@ Elm.Main.make = function (_elm) {
                                                }),
                                                hslContent.signal)
                                                ,A2(Signal._op["<~"],
-                                               F2(function (_v6,_v7) {
+                                               F2(function (_v8,_v9) {
                                                   return function () {
                                                      return function () {
                                                         return noContents;
@@ -155,48 +168,93 @@ Elm.Main.make = function (_elm) {
                                         },
                                         hslContent.signal)]));
    }();
-   var display = F3(function (_v10,
+   var FieldInfo = F8(function (a,
+   b,
+   c,
+   d,
+   e,
+   f,
+   g,
+   h) {
+      return {_: {}
+             ,content: d
+             ,handle: c
+             ,height: g
+             ,hint: h
+             ,label: a
+             ,printer: b
+             ,result: e
+             ,width: f};
+   });
+   var hexInfo = A8(FieldInfo,
+   "hex",
+   Result.toHex,
+   hexContent.handle,
+   Graphics.Input.Field.noContent,
+   Result.NoResult,
+   100,
+   40,
+   "Enter six hexadecimal digits");
+   var rgbInfo = A8(FieldInfo,
+   "rgb",
+   Result.toRGB,
+   rgbContent.handle,
+   Graphics.Input.Field.noContent,
+   Result.NoResult,
+   100,
+   40,
+   "Enter decimal components, separated by a comma or space");
+   var hslInfo = function () {
+      var hint = _L.append("Separate components by a comma or space\n",
+      _L.append("hue is in radians\n",
+      "lightness and saturation are fractions between 0 and 1"));
+      return A8(FieldInfo,
+      "hsl",
+      Result.toHSL,
+      hslContent.handle,
+      Graphics.Input.Field.noContent,
+      Result.NoResult,
+      100,
+      40,
+      hint);
+   }();
+   var display = F3(function (_v12,
    contents,
    result) {
       return function () {
-         switch (_v10.ctor)
+         switch (_v12.ctor)
          {case "_Tuple2":
             return function () {
                  var col = Result.toColor(result);
-                 var fieldWidth = Basics.toFloat(_v10._0) * 0.7;
+                 var fld = function (fieldInfo) {
+                    return field(_U.replace([["result"
+                                             ,result]
+                                            ,["height",80]
+                                            ,["width"
+                                             ,Basics.truncate(Basics.toFloat(_v12._0) * 0.85)]],
+                    fieldInfo));
+                 };
                  var frame = F2(function (height,
                  elem) {
                     return A3(Graphics.Element.container,
-                    _v10._0,
-                    _v10._1,
-                    A2(Graphics.Element.middleAt,
+                    _v12._0,
+                    _v12._1,
+                    A2(Graphics.Element.midTopAt,
                     Graphics.Element.relative(0.5),
-                    Graphics.Element.relative(height)))(A2(Graphics.Element.size,
-                    Basics.truncate(fieldWidth),
-                    Basics.truncate(fieldWidth / 7))(elem));
+                    Graphics.Element.absolute(height)))(elem);
                  });
-                 var fld = field(fieldWidth / 15);
-                 return Graphics.Element.color(col)(Graphics.Element.layers(_L.fromArray([frame(1 / 6)(A5(fld,
-                                                                                         "hex",
-                                                                                         Result.toHex,
-                                                                                         hexContent.handle,
-                                                                                         contents.hex,
-                                                                                         result))
-                                                                                         ,frame(2 / 6)(A5(fld,
-                                                                                         "rgb",
-                                                                                         Result.toRGB,
-                                                                                         rgbContent.handle,
-                                                                                         contents.rgb,
-                                                                                         result))
-                                                                                         ,frame(3 / 6)(A5(fld,
-                                                                                         "hsl",
-                                                                                         Result.toHSL,
-                                                                                         hslContent.handle,
-                                                                                         contents.hsl,
-                                                                                         result))])));
+                 return Graphics.Element.color(col)(Graphics.Element.layers(_L.fromArray([frame(200)(fld(_U.replace([["content"
+                                                                                                                     ,contents.hex]],
+                                                                                         hexInfo)))
+                                                                                         ,frame(320)(fld(_U.replace([["content"
+                                                                                                                     ,contents.rgb]],
+                                                                                         rgbInfo)))
+                                                                                         ,frame(440)(fld(_U.replace([["content"
+                                                                                                                     ,contents.hsl]],
+                                                                                         hslInfo)))])));
               }();}
          _E.Case($moduleName,
-         "between lines 50 and 63");
+         "between lines 69 and 80");
       }();
    });
    var main = A2(Signal._op["~"],
@@ -207,6 +265,9 @@ Elm.Main.make = function (_elm) {
    contents),
    results);
    _elm.Main.values = {_op: _op
+                      ,hexInfo: hexInfo
+                      ,rgbInfo: rgbInfo
+                      ,hslInfo: hslInfo
                       ,hexContent: hexContent
                       ,rgbContent: rgbContent
                       ,hslContent: hslContent
@@ -219,6 +280,7 @@ Elm.Main.make = function (_elm) {
                       ,field: field
                       ,textStyle: textStyle
                       ,fieldStyle: fieldStyle
+                      ,FieldInfo: FieldInfo
                       ,Contents: Contents};
    return _elm.Main.values;
 };Elm.Parsers = Elm.Parsers || {};
@@ -263,7 +325,7 @@ Elm.Parsers.make = function (_elm) {
    var Time = Elm.Time.make(_elm);
    var _op = {};
    var hslParse = function () {
-      var convert = F3(function (h,
+      var make = F3(function (h,
       s,
       l) {
          return function () {
@@ -280,34 +342,15 @@ Elm.Parsers.make = function (_elm) {
             blue);
          }();
       });
-      var $float = A2(Parse.Infix._op["<|>"],
-      A2(Parse.Infix._op["<*>"],
-      Parse.Type.pure(function (f) {
-         return f / 100;
-      }),
-      A2(Parse.Infix._op["<*"],
-      Parse.Builtin.$float,
-      Parse.Builtin.$char(_U.chr("%")))),
-      Parse.Builtin.$float);
-      var hue = A2(Parse.Infix._op["<*>"],
-      Parse.Type.pure(function (f) {
-         return Basics.turns(f / 100);
-      }),
-      A2(Parse.Infix._op["<*"],
-      Parse.Builtin.$float,
-      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("%")))));
-      var sep = F2(function (parser,
-      s) {
-         return A2(Parse.Infix._op["<*"],
-         A2(Parse.Infix._op["*>"],
-         A2(Parse.Infix._op["*>"],
-         A2(Parse.Infix._op["*>"],
-         Parse.Builtin.spaces,
-         Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(",")))),
-         Parse.Builtin.spaces),
-         parser),
-         Parse.Builtin.spaces)(s);
-      });
+      var $float = A2(Parse.Infix._op["<*"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      A2(Parse.Infix._op["*>"],
+      Parse.Builtin.spaces,
+      Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(",")))),
+      Parse.Builtin.spaces),
+      Parse.Builtin.$float),
+      Parse.Builtin.spaces);
       return A2(Parse.Infix._op["<*"],
       A2(Parse.Infix._op["<*>"],
       A2(Parse.Infix._op["<*>"],
@@ -316,10 +359,10 @@ Elm.Parsers.make = function (_elm) {
       A2(Parse.Infix._op["*>"],
       Parse.Combinators.optional(Parse.Builtin.string("hsl")),
       Parse.Combinators.optional(Parse.Builtin.$char(_U.chr("(")))),
-      Parse.Type.pure(convert)),
-      sep(hue)),
-      sep($float)),
-      sep($float)),
+      Parse.Type.pure(make)),
+      $float),
+      $float),
+      $float),
       Parse.Combinators.optional(Parse.Builtin.$char(_U.chr(")"))));
    }();
    var rgbParse = function () {
@@ -369,7 +412,9 @@ Elm.Parsers.make = function (_elm) {
          b) {
             return a * 16 + b;
          })),
-         hexDigit),
+         A2(Parse.Infix._op["*>"],
+         Parse.Builtin.spaces,
+         hexDigit)),
          hexDigit);
          return A2(Parse.Infix._op["<*>"],
          A2(Parse.Infix._op["<*>"],
@@ -1058,14 +1103,12 @@ Elm.Result.make = function (_elm) {
       return function () {
          switch (result.ctor)
          {case "NoResult": return "";
-            case "RGB":
-            return _L.append("rgb(",
-              _L.append(String.show(result._0),
-              _L.append(",",
-              _L.append(String.show(result._1),
-              _L.append(",",
-              _L.append(String.show(result._2),
-              ")"))))));}
+            case "RGB": return A2(List.join,
+              " ",
+              _L.fromArray(["rgb"
+                           ,String.show(result._0)
+                           ,String.show(result._1)
+                           ,String.show(result._2)]));}
          _E.Case($moduleName,
          "between lines 33 and 35");
       }();
@@ -1076,23 +1119,20 @@ Elm.Result.make = function (_elm) {
          hue = $.hue,
          saturation = $.saturation,
          lightness = $.lightness;
-         var format = function (f) {
-            return String.show(Basics.round(f * 100));
+         var format = function ($) {
+            return String.left(4)(String.show($));
          };
          return function () {
             switch (result.ctor)
             {case "NoResult": return "";
-               case "RGB":
-               return _L.append("hsl(",
-                 _L.append(format(hue / Basics.turns(1)),
-                 _L.append(",",
-                 _L.append(format(saturation),
-                 _L.append("%",
-                 _L.append(",",
-                 _L.append(format(lightness),
-                 "%)")))))));}
+               case "RGB": return A2(List.join,
+                 " ",
+                 _L.fromArray(["hsl"
+                              ,format(hue)
+                              ,format(saturation)
+                              ,format(lightness)]));}
             _E.Case($moduleName,
-            "between lines 41 and 46");
+            "between lines 41 and 44");
          }();
       }();
    };
