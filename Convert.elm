@@ -12,12 +12,16 @@ import Window
 {- Record of settings and data needed to make an input field -}
 type FieldInfo =
     { label:String, printer:Result -> String, handle:Handle Content
-    , content:Content, result:Result, textHeight:Float }
+    , content:Content, result:Result, width:Int, height:Int, hint:String }
 
 hexInfo : FieldInfo
-hexInfo = FieldInfo "hex" Result.toHex hexContent.handle noContent NoResult 40
-rgbInfo = FieldInfo "rgb" Result.toRGB rgbContent.handle noContent NoResult 40
-hslInfo = FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult 40
+hexInfo = FieldInfo "hex" Result.toHex hexContent.handle noContent NoResult
+                    100 40 "Enter six hexadecimal digits"
+rgbInfo = FieldInfo "rgb" Result.toRGB rgbContent.handle noContent NoResult
+                    100 40
+                    "Enter decimal components, separated by a comma or space"
+hslInfo = FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult
+                    100 40 "Separate components by a comma or space"
 
 -- Inputs
 hexContent : Input Content
@@ -57,28 +61,32 @@ main = display <~ Window.dimensions ~ contents ~ results
 
 display : (Int,Int) -> Contents -> Result -> Element
 display (w,h) contents result =
-    let fieldWidth = truncate <| toFloat w * 0.85
-        fieldHeight = 80
-        frame height elem =
-            elem |> size fieldWidth fieldHeight
-                 |> container w h (middleAt (relative 0.5)
+    let frame height elem =
+            elem |> container w h (midTopAt (relative 0.5)
                                             (absolute height))
         fld fieldInfo = field {fieldInfo | result <- result
-                              , textHeight <- toFloat fieldHeight/2}
+                              , height <- 80
+                              , width <- truncate <| toFloat w * 0.85 }
         col = Result.toColor result
     in color col <| layers [
-          frame (240) <| fld { hexInfo | content <- contents.hex }
-        , frame (360) <| fld { rgbInfo | content <- contents.rgb }
-        , frame (480) <| fld { hslInfo | content <- contents.hsl }
+          frame (200) <| fld { hexInfo | content <- contents.hex }
+        , frame (320) <| fld { rgbInfo | content <- contents.rgb }
+        , frame (440) <| fld { hslInfo | content <- contents.hsl }
            ]
 
 {- make an input field using data stored in a FieldInfo -}
 field : FieldInfo -> Element
-field {textHeight, label, printer, handle, content, result} =
+field {width, height, label, printer, handle, content, result, hint} =
     let content' = if | String.isEmpty content.string ->
                          { noContent | string <- printer result }
                       | otherwise -> content
-    in Field.field (fieldStyle textHeight) handle id label content'
+        style = fieldStyle <| toFloat height/2
+        field = size  width height
+                  <| Field.field style handle id label content'
+        hintElem = if result == NoResult && not (String.isEmpty content.string)
+                   then leftAligned <| toText hint
+                   else empty
+    in above field hintElem
 
 textStyle = Text.defaultStyle
 fieldStyle h = { defaultStyle |
