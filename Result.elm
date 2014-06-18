@@ -36,7 +36,7 @@ toRGB result =
 
 toHSL : Result -> String
 toHSL result =
-    let format = String.left 4 . show
+    let format flt = String.left 4 . show <| if isNaN flt then 0 else flt
         {hue, saturation, lightness} = toHsl <| toColor result
     in case result of
          RGB r g b ->
