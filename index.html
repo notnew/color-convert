@@ -206,7 +206,7 @@ Elm.Main.make = function (_elm) {
    "Enter decimal components, separated by a comma or space");
    var hslInfo = function () {
       var hint = _L.append("Separate components by a comma or space\n",
-      _L.append("hue is in radians\n",
+      _L.append("hue is in radians between 0 and 6.283185\n",
       "lightness and saturation are fractions between 0 and 1"));
       return A8(FieldInfo,
       "hsl",
@@ -1119,8 +1119,8 @@ Elm.Result.make = function (_elm) {
          hue = $.hue,
          saturation = $.saturation,
          lightness = $.lightness;
-         var format = function ($) {
-            return String.left(4)(String.show($));
+         var format = function (flt) {
+            return String.left(4)(String.show(Basics.isNaN(flt) ? 0 : flt));
          };
          return function () {
             switch (result.ctor)
