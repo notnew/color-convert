@@ -36,11 +36,11 @@ toRGB result =
 
 toHSL : Result -> String
 toHSL result =
-    let format f = show <| round <| f * 100
+    let format = String.left 4 . show
         {hue, saturation, lightness} = toHsl <| toColor result
     in case result of
          RGB r g b ->
-             "hsl(" ++ format (hue/turns 1) ++
-               "," ++ format saturation ++ "%" ++
-               "," ++ format lightness ++ "%)"
+             "hsl(" ++ format hue ++
+                "," ++ format saturation ++
+                "," ++ format lightness ++ ")"
          NoResult  -> ""

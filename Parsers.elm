@@ -36,15 +36,11 @@ rgbParse =
 
 hslParse : Parser Result
 hslParse =
-    let sep : Parser a -> Parser a
-        sep parser s = (P.spaces *> optional (P.char ',') *> P.spaces *>
-                       parser <* P.spaces) s
-        hue = pure (\f -> turns <| f/100) <*> (P.float <* optional (P.char '%'))
-        float = (pure (\f -> f/100) <*> (P.float <* P.char '%'))
-            <|> P.float
-        convert h s l = let {red,green,blue} = toRgb <| hsl h s l
-                        in Result.make red green blue
+    let float = P.spaces *> optional (P.char ',') *> P.spaces *>
+                P.float  <* P.spaces
+        make h s l = let {red,green,blue} = toRgb <| hsl h s l
+                     in Result.make red green blue
     in optional (P.string "hsl") *> optional (P.char '(' )
-             *> pure convert <*> (sep hue) <*>  (sep float) <*> (sep float)
+             *> pure make <*> float <*> float <*> float
                 <* optional (P.char ')')
 

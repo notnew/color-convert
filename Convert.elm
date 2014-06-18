@@ -20,8 +20,13 @@ hexInfo = FieldInfo "hex" Result.toHex hexContent.handle noContent NoResult
 rgbInfo = FieldInfo "rgb" Result.toRGB rgbContent.handle noContent NoResult
                     100 40
                     "Enter decimal components, separated by a comma or space"
-hslInfo = FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult
-                    100 40 "Separate components by a comma or space"
+hslInfo =
+    let hint =
+        "Separate components by a comma or space\n" ++
+        "hue is in radians\n" ++
+        "lightness and saturation are fractions between 0 and 1"
+    in FieldInfo "hsl" Result.toHSL hslContent.handle noContent NoResult
+                 100 40 hint
 
 -- Inputs
 hexContent : Input Content
