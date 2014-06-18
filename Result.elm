@@ -31,7 +31,7 @@ toHex result =
 toRGB : Result -> String
 toRGB result =
     case result of
-      RGB r g b -> "rgb(" ++ show r ++ "," ++ show g ++ "," ++ show b ++ ")"
+      RGB r g b -> join " " ["rgb", show r, show g, show b]
       NoResult  -> ""
 
 toHSL : Result -> String
@@ -40,7 +40,5 @@ toHSL result =
         {hue, saturation, lightness} = toHsl <| toColor result
     in case result of
          RGB r g b ->
-             "hsl(" ++ format hue ++
-                "," ++ format saturation ++
-                "," ++ format lightness ++ ")"
+             join " " ["hsl", format hue, format saturation, format lightness]
          NoResult  -> ""

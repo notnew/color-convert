@@ -95,4 +95,6 @@ field {width, height, label, printer, handle, content, result, hint} =
 
 textStyle = Text.defaultStyle
 fieldStyle h = { defaultStyle |
-     style <- {textStyle | height <- Just h, bold <- True} }
+     style <- {textStyle | height <- Just h, bold <- True}
+   , outline <- {radius=6, color=grey, width=Field.uniformly 4}
+   , padding <- Field.uniformly <| round (h/2) }
